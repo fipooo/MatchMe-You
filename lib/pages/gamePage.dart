@@ -1,12 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sexmatch/elements/mySlider.dart';
 import 'package:sexmatch/elements/questions.dart';
 import 'package:sexmatch/pages/resultPage.dart';
+import 'package:sexmatch/services/firebaseConnect.dart';
+import 'package:sexmatch/widgets/cardWidget.dart';
 
 class GamePage extends StatefulWidget {
-  GamePage({Key key, @required this.code, @required this.player, @required this.enemy, @required this.questions}) : super(key: key);
+  GamePage(
+      {Key key,
+      @required this.code,
+      @required this.player,
+      @required this.enemy,
+      @required this.questions})
+      : super(key: key);
 
   final String code;
   final String player;
@@ -17,11 +26,9 @@ class GamePage extends StatefulWidget {
   _GamePage createState() => _GamePage();
 }
 
-class _GamePage extends State<GamePage> with SingleTickerProviderStateMixin{
+class _GamePage extends State<GamePage> with SingleTickerProviderStateMixin {
   AnimationController _controller;
-
   List<String> textList;
-
   List<bool> answers = [];
   List<Widget> cardList = new List();
   bool set = false;
@@ -66,6 +73,8 @@ class _GamePage extends State<GamePage> with SingleTickerProviderStateMixin{
     ],
   );
 
+  bool loading = true;
+
   List<String> imageList = [
     ('assets/bg.jpg'),
     ('assets/bg1.jpg'),
@@ -83,8 +92,17 @@ class _GamePage extends State<GamePage> with SingleTickerProviderStateMixin{
     ('assets/bg13.jpg'),
   ];
 
+  loadingTime() async {
+    Future.delayed(Duration(seconds: 4), () {
+      setState(() {
+        loading = false;
+      });
+    });
+  }
+
   @override
   void initState() {
+    loadingTime();
     _controller = AnimationController(
       duration: const Duration(seconds: 20),
       vsync: this,
@@ -100,164 +118,112 @@ class _GamePage extends State<GamePage> with SingleTickerProviderStateMixin{
     super.dispose();
   }
 
+  void _removeCard(index) {
+    setState(() {
+      cardList.removeAt(index);
+      print(cardList.length);
+    });
+  }
+
+  List<Widget> _getMatchCard(var height, var width) {
+    cardList = new List();
+    for (int x = 0; x < 10; x++) {
+      cardList.add(
+        Positioned(
+          top: height * 0.15,
+          left: width * 0.03,
+          child: Draggable(
+              onDragEnd: (drag) async {
+                if (drag.offset.dx > 100 || drag.offset.dx < -100) {
+                  _removeCard(x);
+
+                  if (drag.offset.dx < 0)
+                    answers.add(false);
+                  else
+                    answers.add(true);
+
+                  Future.delayed(Duration(milliseconds: 500), () async {
+                    if (cardList.length == 0) {
+                      await FirebaseConnect().updatePlayerResult(widget.code,
+                          widget.player, answers, context, widget.enemy);
+                    }
+                  });
+                }
+              },
+              childWhenDragging: Container(),
+              feedback: CardWidget().card(textList, x, height, width),
+              child: CardWidget().card(textList, x, height, width)),
+        ),
+      );
+    }
+
+    return cardList;
+  }
+
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
 
-    void _removeCard(index) {
+
+    if (!set) {
+      _getMatchCard(height, width);
       setState(() {
-        cardList.removeAt(index);
-        print(cardList.length);
-      }
-      );
-    }
-
-    List<Widget> _getMatchCard() {
-      cardList = new List();
-      for (int x = 0; x < 10; x++) {
-        cardList.add(Positioned(
-          top: height*0.1,
-          left: width*0.05,
-          child: Draggable(
-            onDragEnd: (drag) async {
-              if(drag.offset.dx>50 || drag.offset.dx<-50){
-                _removeCard(x);
-                print(drag.offset.dx);
-
-                if(drag.offset.dx<0){
-                  answers.add(false);
-                  print('lewo');
-                }else{
-                  answers.add(true);
-                  print('prawo');
-                }
-
-                Future.delayed(Duration(milliseconds: 500), (){
-                  if(cardList.length == 0){
-                    print('here');
-                    Firestore.instance.collection('games').document(widget.code).updateData({
-                      widget.player : {
-                        '1' : answers[0] ? 1 : 2,
-                        '2' : answers[1] ? 1 : 2,
-                        '3' : answers[2] ? 1 : 2,
-                        '4' : answers[3] ? 1 : 2,
-                        '5' : answers[4] ? 1 : 2,
-                        '6' : answers[5] ? 1 : 2,
-                        '7' : answers[6] ? 1 : 2,
-                        '8' : answers[7] ? 1 : 2,
-                        '9' : answers[8] ? 1 : 2,
-                        '10' : answers[9] ? 1 : 2,
-                      }
-                    }).whenComplete((){
-                      Navigator.pushReplacement(
-                        context,
-                        MySlider(builder: (context) => ResultPage(code: widget.code, player: widget.player, enemy: widget.enemy)),
-                      );
-                    });
-
-                  }
-                });
-
-              }
-
-            },
-            childWhenDragging: Container(),
-            feedback: Card(
-              clipBehavior: Clip.antiAliasWithSaveLayer,
-              color: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              child: Stack(
-                children: <Widget>[
-                  ClipRRect(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(10.0)),
-                    child: Image.asset(
-                      imageList[x],
-                      width: width*0.9,
-                      height: height*0.7,
-                      fit: BoxFit.fitHeight,
-                    ),
-                  ),
-                  Container(
-                    child: Center(
-                      child: Text(textList[x], style: TextStyle(fontSize: 45, fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
-                    ),
-                    width: width*0.9,
-                    height: height*0.7,
-                  )
-                ],
-              ),
-            ),
-            child: Card(
-              clipBehavior: Clip.antiAliasWithSaveLayer,
-              color: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              child: Stack(
-                children: <Widget>[
-                  ClipRRect(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(10.0)),
-                    child: Image.asset(
-                      imageList[x],
-                      width: width*0.9,
-                      height: height*0.7,
-                      fit: BoxFit.fitHeight,
-                    ),
-                  ),
-                  Container(
-                    child: Center(
-                      child: Text(textList[x], style: TextStyle(fontSize: 45, fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
-                    ),
-                    width: width*0.9,
-                    height: height*0.7,
-                  )
-                ],
-              ),
-            ),
-          ),
-        ),
-        );
-      }
-
-      return cardList;
-    }
-
-    if(!set){
-      _getMatchCard();
-      setState(() {
-        set=true;
+        set = true;
       });
-    }else{}
+    } else {}
 
     return PlatformScaffold(
-      appBar: PlatformAppBar(
-        title: Text(widget.code, style: TextStyle(color: Colors.white),),
-        backgroundColor: Colors.white.withOpacity(0.0),
-        material: (_, __)  => MaterialAppBarData(
-          centerTitle: true,
-          backgroundColor: Colors.purple.withOpacity(1.0),
-          iconTheme: IconThemeData(
-            color: Colors.white,
-          ),
-        ),
-        cupertino: (_, __) => CupertinoNavigationBarData(
-          actionsForegroundColor: Colors.white
-        ),
-      ),
-      body: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            return Container(
+      appBar: loading
+          ? null
+          : PlatformAppBar(
+              title: Text(
+                widget.code,
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.white.withOpacity(0.0),
+              material: (_, __) => MaterialAppBarData(
+                centerTitle: true,
+                backgroundColor: Colors.purple.withOpacity(1.0),
+                iconTheme: IconThemeData(
+                  color: Colors.white,
+                ),
+              ),
+              cupertino: (_, __) => CupertinoNavigationBarData(
+                  actionsForegroundColor: Colors.white),
+            ),
+      body: loading
+          ? Container(
               width: width,
               height: height,
-              color: background
-                  .evaluate(AlwaysStoppedAnimation(_controller.value)),
-                child: Center(
-                    child: cardList.toList().length<=0 ? Center(child: PlatformCircularProgressIndicator()) : Stack(
-                        children: cardList),
+              child: Center(
+                child: SpinKitFadingCube(
+                  color: Colors.purple,
+                  size: 150,
                 ),
-            );
-          }
-      ),
+              ),
+            )
+          : AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return Container(
+                  width: width,
+                  height: height,
+                  color: background
+                      .evaluate(AlwaysStoppedAnimation(_controller.value)),
+                  child: Center(
+                    child: cardList.toList().length <= 0
+                        ? Center(
+                            child: SpinKitFadingCube(
+                              color: Colors.white,
+                              size: 150,
+                            ),
+                          )
+                        : Stack(children: cardList),
+                  ),
+                );
+              }),
     );
   }
 }
