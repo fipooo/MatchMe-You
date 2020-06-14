@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
-import 'package:sexmatch/elements/MySlider.dart';
+import 'package:sexmatch/elements/mySlider.dart';
 import 'package:sexmatch/elements/questions.dart';
 import 'package:sexmatch/pages/resultPage.dart';
 
