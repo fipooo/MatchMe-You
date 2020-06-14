@@ -1,6 +1,6 @@
-# sexmatch
+# Match Me & You App
 
-A new Flutter application.
+A new Flutter application which will be calculated how well someone matches another person.
 
 ## Getting Started
 
