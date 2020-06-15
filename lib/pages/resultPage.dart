@@ -4,6 +4,8 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sexmatch/elements/questions.dart';
 import 'package:sexmatch/services/firebaseConnect.dart';
+import 'package:sexmatch/widgets/answersList.dart';
+import 'package:sexmatch/widgets/percentRatio.dart';
 
 class ResultPage extends StatefulWidget {
   ResultPage({Key key, this.title, @required this.code, @required this.player, @required this.enemy}) : super(key: key);
@@ -23,6 +25,8 @@ class _ResultPage extends State<ResultPage> with SingleTickerProviderStateMixin{
   List<String> textList = [];
   List<bool> answerYour;
   List<bool> answerEnemy;
+  Map<dynamic, dynamic> list;
+  Map<dynamic, dynamic> list2;
 
   getQuestions()async{
       List<dynamic> tmp = await FirebaseConnect().getQuestions(widget.code);
@@ -31,7 +35,7 @@ class _ResultPage extends State<ResultPage> with SingleTickerProviderStateMixin{
   }
   
   setLists(){
-    var tmp = [
+    answerYour= [
       false,
       false,
       false,
@@ -43,10 +47,18 @@ class _ResultPage extends State<ResultPage> with SingleTickerProviderStateMixin{
       false,
       false
     ];
-    
-    answerYour = tmp;
-
-    answerEnemy = tmp;
+    answerEnemy= [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ];
   }
 
   @override
@@ -75,7 +87,8 @@ class _ResultPage extends State<ResultPage> with SingleTickerProviderStateMixin{
     }
   }
 
-  updateYourList(var listTmp, var updatedList){
+  updateYourList(var listTmp, var updatedList, var listTmpEnemy, var updatedListEnemy){
+
     listTmp.forEach((key, value) {
       //print('$key : $value');
       switch (key) {
@@ -112,6 +125,44 @@ class _ResultPage extends State<ResultPage> with SingleTickerProviderStateMixin{
           break;
       }
     });
+
+    listTmpEnemy.forEach((key, value) {
+      //print('$key : $value');
+      switch (key) {
+        case '1':
+        //print('here');
+          updatedListEnemy[0] = value==1 ? true : value==0 ? null : false;
+          break;
+        case '2':
+          updatedListEnemy[1] = value==1 ? true : value==0 ? null : false;
+          break;
+        case '3':
+          updatedListEnemy[2] = value==1 ? true : value==0 ? null : false;
+          break;
+        case '4':
+          updatedListEnemy[3] = value==1 ? true : value==0 ? null : false;
+          break;
+        case '5':
+          updatedListEnemy[4] = value==1 ? true : value==0 ? null : false;
+          break;
+        case '6':
+          updatedListEnemy[5] = value==1 ? true : value==0 ? null : false;
+          break;
+        case '7':
+          updatedListEnemy[6] = value==1 ? true : value==0 ? null : false;
+          break;
+        case '8':
+          updatedListEnemy[7] = value==1 ? true : value==0 ? null : false;
+          break;
+        case '9':
+          updatedListEnemy[8] = value==1 ? true : value==0 ? null : false;
+          break;
+        case '10':
+          updatedListEnemy[9] = value==1 ? true : value==0 ? null : false;
+          break;
+      }
+    });
+
   }
 
   updateEnemyList(var listTmp, var updatedList){
@@ -153,6 +204,18 @@ class _ResultPage extends State<ResultPage> with SingleTickerProviderStateMixin{
     });
   }
 
+  double percentCalculation(){
+    int score = 0;
+
+    for(int i=0; i<answerYour.length; i++){
+      if(answerYour[i] == answerEnemy[i]){
+        score=score+1;
+      }
+    }
+
+    return score/answerYour.length;
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -172,12 +235,18 @@ class _ResultPage extends State<ResultPage> with SingleTickerProviderStateMixin{
             else{
               checkIfOpponentEnd(false);
 
-              Map<dynamic, dynamic> list = snapshot.data.data[widget.player];
+              //print(snapshot.data.data[widget.player]);
+              //print(snapshot.data.data[widget.enemy]);
 
-              Map<dynamic, dynamic> list2 = snapshot.data.data[widget.enemy];
+              setLists();
 
-              updateYourList(list, answerYour);
-              updateEnemyList(list2, answerEnemy);
+              list = snapshot.data.data[widget.player];
+
+              list2 = snapshot.data.data[widget.enemy];
+
+              updateYourList(list, answerYour, list2, answerEnemy);
+
+              //updateYourList(list, answerYour);
             }
           }else{
             print('NULL');
@@ -221,69 +290,17 @@ class _ResultPage extends State<ResultPage> with SingleTickerProviderStateMixin{
                   ),
                 ),
               ) :
-              Container(
-                width: width,
-                height: height,
-                child: Row(
-                    children: <Widget> [
-                      Container(
-                        width: width*0.47,
-                        height: height*0.9,
-                        child: ListView(
-                            physics: NeverScrollableScrollPhysics(),
-                            children: List.generate(10, (index) {
-                              String asq = textList[index];
-                              String asw = answerYour[index].toString();
-                              String aswEnemy = answerEnemy[index].toString();
-                              String you = widget.player;
-                              return Container(
-                                  height: height*0.08,
-                                  color: (answerEnemy[index] == null) ? Colors.white : (answerEnemy[index] && answerYour[index]) ? Colors.green : (answerEnemy[index] != answerYour[index]) ? Colors.orangeAccent : Colors.red,
-                                  child: Center(child: ListTile(title: Text('$asq?', style: TextStyle(fontSize: 16),    /*I:  $asw     He/She: $aswEnemy'*/),))
-                              );
-                            })
-                        ),
-                      ),
-                      Container(
-                        width: width*0.21,
-                        height: height*0.9,
-                        child: ListView(
-                            physics: NeverScrollableScrollPhysics(),
-                            children: List.generate(10, (index) {
-                              String asq = textList[index];
-                              String asw = answerYour[index].toString();
-                              String aswEnemy = answerEnemy[index].toString();
-                              String you = widget.player;
-                              return Container(
-                                  height: height*0.08,
-                                  color: answerYour[index] ? Colors.green : Colors.red,
-                                  //color: (answerYour[index] && (answerenemy[index]== null ? false : answerenemy[index])) ? Colors.green : (!answerYour[index] && !(answerenemy[index]== null ? false : answerenemy[index])) ? Colors.red : Colors.orange,
-                                  child: Center(child: ListTile(title: Text('I:  $asw'),))
-                              );
-                            })
-                        ),
-                      ),
-                      Container(
-                        width: width*0.32,
-                        height: height*0.9,
-                        child: ListView(
-                            physics: NeverScrollableScrollPhysics(),
-                            children: List.generate(10, (index) {
-                              String asq = textList[index];
-                              String asw = answerYour[index].toString();
-                              String aswEnemy = answerEnemy[index].toString();
-                              String you = widget.player;
-                              return Container(
-                                  height: height*0.08,
-                                  color: (answerEnemy[index]==null) ? Colors.orangeAccent : answerEnemy[index] ? Colors.green : Colors.red,
-                                  child: Center(child: ListTile(title: Text('He/She: $aswEnemy'),))
-                              );
-                            })
-                        ),
-                      ),
-
-                    ]
-                ),
+              SingleChildScrollView(
+                child: Container(
+                  child: Column(
+                      children: <Widget>[
+                        PercentRatio().percentRatio(width: width, height: height, percent: percentCalculation()),
+                        AnswerList().answerList(width: width, height: height,
+                            answerEnemy: answerEnemy, answerYour: answerYour,
+                            textList: textList),
+                      ],
+                    ),
+                )
               ),
             ),
           );

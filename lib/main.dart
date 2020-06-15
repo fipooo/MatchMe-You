@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:random_string/random_string.dart';
-import 'package:sexmatch/appTheme.dart';
+import 'package:sexmatch/settings/appTheme.dart';
 import 'package:sexmatch/elements/game.dart';
 import 'package:sexmatch/elements/questions.dart';
 import 'package:sexmatch/pages/gamePage.dart';
