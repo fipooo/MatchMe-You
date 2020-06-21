@@ -2,21 +2,21 @@ import 'dart:ui';
 
 class Questions{
   List<String> textList = [
-    'Lubię kolor czarny',
-    'Lubię kolor czerwony',
-    'Lubię kolor niebieski',
-    'Lubię szybkie auta',
-    'Chce duzo zarabiac',
-    'Mam narzeczoną',
-    'Jestem rasistą',
-    'Lubię latać',
-    'Lubię koty',
-    'Lubię psy',
-    'Lubie skakać na spadochronie',
-    'Lubię chińskie jedzenie',
-    'Lubię imprezy',
-    'Lubię alkochol',
-    'Lubię zioło'
+    'I like black color',
+    'I like red color',
+    'I like blue color',
+    'I like fast cars',
+    'I want to be rich',
+    'I have boyfriend/girlfriend',
+    'I like dogs',
+    'I like fly',
+    'I like cats',
+    'I like villages',
+    'I like bungee',
+    'I like chinese food',
+    'I like parties',
+    'I like alcohol',
+    'I like weed'
   ];
 
   List<int> questionsNumbers = [0,1,2,3,4,5,6,7,8,9,];

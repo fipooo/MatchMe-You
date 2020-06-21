@@ -30,7 +30,7 @@ class CardWidget{
               imageList[index],
               width: width*0.9,
               height: height*0.5,
-              fit: BoxFit.fitHeight,
+              fit: BoxFit.cover,
             ),
           ),
           Container(

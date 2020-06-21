@@ -18,7 +18,7 @@ class ResultPage extends StatefulWidget {
   _ResultPage createState() => _ResultPage();
 }
 
-class _ResultPage extends State<ResultPage> with SingleTickerProviderStateMixin{
+class _ResultPage extends State<ResultPage> {
   bool loading = true;
   bool resultReady = false;
   bool pageChange = true;
@@ -214,6 +214,12 @@ class _ResultPage extends State<ResultPage> with SingleTickerProviderStateMixin{
     }
 
     return score/answerYour.length;
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
   }
 
   @override
